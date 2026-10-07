@@ -1,0 +1,47 @@
+name: cidades-esg-staging
+
+services:
+  postgres-staging:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${STAGING_DB_NAME:-cidades_esg_staging}
+      POSTGRES_USER: ${STAGING_DB_USER:-staging_user}
+      POSTGRES_PASSWORD: ${STAGING_DB_PASSWORD:-staging_password}
+    volumes:
+      - postgres-staging-data:/var/lib/postgresql/data
+    networks: [esg-staging-network]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app-staging:
+    build: .
+    environment:
+      DB_HOST: postgres-staging
+      DB_PORT: 5432
+      DB_NAME: ${STAGING_DB_NAME:-cidades_esg_staging}
+      DB_USER: ${STAGING_DB_USER:-staging_user}
+      DB_PASSWORD: ${STAGING_DB_PASSWORD:-staging_password}
+      SPRING_PROFILES_ACTIVE: staging
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres-staging:
+        condition: service_healthy
+    networks: [esg-staging-network]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  postgres-staging-data:
+
+networks:
+  esg-staging-network:
+    driver: bridge

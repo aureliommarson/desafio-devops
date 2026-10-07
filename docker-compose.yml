@@ -1,0 +1,55 @@
+name: cidades-esg-local
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: cidades-esg-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-cidades_esg}
+      POSTGRES_USER: ${DB_USER:-esg_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-esg_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - esg-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cidades-esg-app
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-cidades_esg}
+      DB_USER: ${DB_USER:-esg_user}
+      DB_PASSWORD: ${DB_PASSWORD:-esg_password}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-staging}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - esg-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+
+networks:
+  esg-network:
+    driver: bridge

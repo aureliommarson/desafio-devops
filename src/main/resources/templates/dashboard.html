@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Cidades ESG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="flex min-h-screen flex-col bg-slate-50 text-slate-800">
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
+      <section
+        class="mb-8 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-600 p-7 text-white shadow-lg"
+      >
+        <p
+          class="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-100"
+        >
+          Painel municipal
+        </p>
+        <div
+          class="flex flex-col justify-between gap-5 md:flex-row md:items-end"
+        >
+          <div>
+            <h1 class="text-3xl font-bold">
+              Impacto sustentável em um só lugar
+            </h1>
+            <p class="mt-2 max-w-2xl text-emerald-50">
+              Acompanhe ações ambientais, sociais e de governança realizadas
+              pelas cidades.
+            </p>
+          </div>
+          <a
+            th:href="@{/iniciativas/nova}"
+            class="inline-flex w-fit rounded-lg bg-white px-5 py-3 font-semibold text-emerald-800 shadow hover:bg-emerald-50"
+            >Cadastrar iniciativa</a
+          >
+        </div>
+      </section>
+
+      <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <article
+          class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+        >
+          <p class="text-sm font-medium text-slate-500">Total</p>
+          <p class="mt-2 text-3xl font-bold text-slate-900" th:text="${total}">
+            0
+          </p>
+        </article>
+        <article
+          class="rounded-xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm"
+        >
+          <p class="text-sm font-medium text-emerald-700">Ambientais</p>
+          <p
+            class="mt-2 text-3xl font-bold text-emerald-800"
+            th:text="${ambientais}"
+          >
+            0
+          </p>
+        </article>
+        <article
+          class="rounded-xl border border-blue-200 bg-blue-50 p-5 shadow-sm"
+        >
+          <p class="text-sm font-medium text-blue-700">Sociais</p>
+          <p class="mt-2 text-3xl font-bold text-blue-800" th:text="${sociais}">
+            0
+          </p>
+        </article>
+        <article
+          class="rounded-xl border border-violet-200 bg-violet-50 p-5 shadow-sm"
+        >
+          <p class="text-sm font-medium text-violet-700">Governança</p>
+          <p
+            class="mt-2 text-3xl font-bold text-violet-800"
+            th:text="${governanca}"
+          >
+            0
+          </p>
+        </article>
+        <article
+          class="rounded-xl border border-teal-200 bg-teal-50 p-5 shadow-sm"
+        >
+          <p class="text-sm font-medium text-teal-700">Concluídas</p>
+          <p
+            class="mt-2 text-3xl font-bold text-teal-800"
+            th:text="${concluidas}"
+          >
+            0
+          </p>
+        </article>
+      </section>
+
+      <section
+        class="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+      >
+        <div
+          class="flex items-center justify-between border-b border-slate-200 px-5 py-4"
+        >
+          <div>
+            <h2 class="text-lg font-bold">Iniciativas recentes</h2>
+            <p class="text-sm text-slate-500">Últimos registros do painel</p>
+          </div>
+          <a
+            th:href="@{/iniciativas}"
+            class="text-sm font-semibold text-emerald-700 hover:text-emerald-900"
+            >Ver todas</a
+          >
+        </div>
+        <div
+          th:if="${#lists.isEmpty(iniciativas)}"
+          class="p-8 text-center text-slate-500"
+        >
+          Nenhuma iniciativa cadastrada.
+        </div>
+        <div
+          th:unless="${#lists.isEmpty(iniciativas)}"
+          class="divide-y divide-slate-100"
+        >
+          <a
+            th:each="item : ${iniciativas}"
+            th:href="@{/iniciativas/{id}(id=${item.id})}"
+            class="flex flex-col gap-2 px-5 py-4 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p class="font-semibold text-slate-900" th:text="${item.titulo}">
+                Título
+              </p>
+              <p class="text-sm text-slate-500" th:text="${item.cidade}">
+                Cidade
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
+                th:text="${item.categoria.descricao}"
+                >Categoria</span
+              >
+              <span
+                class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+                th:text="${item.status.descricao}"
+                >Status</span
+              >
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+  </body>
+</html>

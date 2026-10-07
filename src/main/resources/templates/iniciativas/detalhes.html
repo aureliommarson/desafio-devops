@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detalhes | Cidades ESG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="flex min-h-screen flex-col bg-slate-50 text-slate-800">
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+    <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6">
+      <a
+        th:href="@{/iniciativas}"
+        class="text-sm font-semibold text-emerald-700 hover:underline"
+      >
+        Voltar para iniciativas</a
+      >
+      <article
+        class="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+      >
+        <div
+          class="bg-gradient-to-r from-emerald-700 to-teal-600 p-6 text-white"
+        >
+          <div class="mb-4 flex flex-wrap gap-2">
+            <span
+              class="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold"
+              th:text="${iniciativa.categoria.descricao}"
+              >Categoria</span
+            ><span
+              class="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold"
+              th:text="${iniciativa.status.descricao}"
+              >Status</span
+            >
+          </div>
+          <h1 class="text-3xl font-bold" th:text="${iniciativa.titulo}">
+            Título
+          </h1>
+          <p class="mt-2 text-emerald-50" th:text="${iniciativa.cidade}">
+            Cidade
+          </p>
+        </div>
+        <div class="p-6">
+          <div class="grid gap-6 sm:grid-cols-3">
+            <div class="sm:col-span-2">
+              <h2
+                class="text-sm font-semibold uppercase tracking-wide text-slate-500"
+              >
+                Descrição
+              </h2>
+              <p
+                class="mt-2 whitespace-pre-line leading-relaxed"
+                th:text="${iniciativa.descricao}"
+              >
+                Descrição
+              </p>
+            </div>
+            <div class="rounded-xl bg-emerald-50 p-5 text-center">
+              <p class="text-sm font-semibold text-emerald-700">Impacto</p>
+              <p
+                class="mt-1 text-5xl font-bold text-emerald-800"
+                th:text="${iniciativa.pontuacaoImpacto}"
+              >
+                8
+              </p>
+              <p class="text-sm text-emerald-700">de 10</p>
+            </div>
+          </div>
+          <div
+            class="mt-6 border-t border-slate-100 pt-5 text-sm text-slate-500"
+          >
+            Cadastrada em
+            <span
+              class="font-medium text-slate-700"
+              th:text="${#temporals.format(iniciativa.dataCriacao, 'dd/MM/yyyy HH:mm')}"
+              >data</span
+            >
+          </div>
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+            <a
+              th:href="@{/iniciativas/{id}/editar(id=${iniciativa.id})}"
+              class="rounded-lg bg-emerald-700 px-5 py-2.5 text-center font-semibold text-white hover:bg-emerald-800"
+              >Editar iniciativa</a
+            >
+            <form
+              th:action="@{/iniciativas/{id}/excluir(id=${iniciativa.id})}"
+              method="post"
+              onsubmit="
+                return confirm('Deseja realmente excluir esta iniciativa?');
+              "
+            >
+              <button
+                type="submit"
+                class="w-full rounded-lg border border-red-300 px-5 py-2.5 font-semibold text-red-700 hover:bg-red-50"
+              >
+                Excluir
+              </button>
+            </form>
+          </div>
+        </div>
+      </article>
+    </main>
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+# Java e Maven
+target/
+*.class
+*.jar
+*.war
+*.log
+.mvn/timing.properties
+
+# Variáveis e arquivos locais
+.env
+logs/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporários
+*.tmp
+*.swp
+oracleJdk-27/ 

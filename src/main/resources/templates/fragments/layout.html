@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <nav th:fragment="navbar" class="bg-emerald-800 text-white shadow-lg">
+      <div
+        class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+      >
+        <a th:href="@{/}" class="flex items-center gap-3">
+          <span>
+            <span class="block text-lg font-bold leading-tight"
+              >Cidades ESG Inteligentes</span
+            >
+            <span class="block text-xs text-emerald-100"
+              >Iniciativas sustentáveis</span
+            >
+          </span>
+        </a>
+        <div class="flex items-center gap-2 text-sm font-medium">
+          <a th:href="@{/}" class="rounded-lg px-3 py-2 hover:bg-white/10"
+            >Dashboard</a
+          >
+          <a
+            th:href="@{/iniciativas}"
+            class="rounded-lg px-3 py-2 hover:bg-white/10"
+            >Iniciativas</a
+          >
+          <a
+            th:href="@{/iniciativas/nova}"
+            class="rounded-lg bg-white px-3 py-2 text-emerald-800 hover:bg-emerald-50"
+            >Nova iniciativa</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <footer
+      th:fragment="footer"
+      class="mt-auto border-t border-slate-200 bg-white py-6 text-center text-sm text-slate-500"
+    >
+      Auréio Marson - 2026 | RM: 565018
+    </footer>
+  </body>
+</html>
