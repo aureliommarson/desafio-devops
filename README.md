@@ -504,11 +504,7 @@ atividade-devops/
 ├── .mvn/
 │   └── wrapper/
 │       └── maven-wrapper.properties
-├── docs/
-│   ├── evidencias/
-│   │   └── README.md
-│   ├── documentacao-tecnica.md
-│   └── roteiro-apresentacao.md
+│ 
 ├── src/
 │   ├── main/
 │   │   ├── java/br/edu/cidadesesg/
@@ -531,28 +527,6 @@ atividade-devops/
 
 ---
 
-# Evidências
-
-As evidências reais da execução local, dos containers e do pipeline CI/CD estão armazenadas na pasta:
-
-```text
-docs/evidencias/
-```
-
-As capturas demonstram:
-
-- aplicação em funcionamento;
-- dashboard;
-- listagem de iniciativas;
-- containers da aplicação e PostgreSQL;
-- build automatizado;
-- testes automatizados;
-- Docker Build;
-- deploy de staging;
-- smoke test;
-- deploy de produção.
-
-Nenhuma evidência simulada foi utilizada.
 
 ---
 
