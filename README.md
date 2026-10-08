@@ -1,42 +1,153 @@
-# Projeto - Cidades ESG Inteligentes
+# Cidades ESG Inteligentes
 
-Painel de Iniciativas Sustentáveis desenvolvido para tarefa: **ATIVIDADE – DESAFIO DEVOPS**
+Painel de Iniciativas Sustentáveis desenvolvido para a atividade **Desafio DevOps**.
 
 ## Sobre o projeto
 
-O sistema permite registrar e acompanhar iniciativas ambientais, sociais e de governança realizadas por cidades. A solução foi mantida intencionalmente pequena: uma aplicação web Spring Boot com páginas renderizadas no servidor, PostgreSQL e automação completa de build, testes e deploy demonstrativo.
+O **Cidades ESG Inteligentes** é uma aplicação web para cadastro e acompanhamento de iniciativas ambientais, sociais e de governança realizadas por cidades.
 
-Ao iniciar com um banco vazio, cinco iniciativas de exemplo são inseridas automaticamente para preencher o dashboard.
+O projeto foi desenvolvido em **Java com Spring Boot**, utiliza **PostgreSQL** como banco de dados e aplica práticas de DevOps com:
+
+- Docker;
+- Docker Compose;
+- testes automatizados;
+- GitHub Actions;
+- pipeline CI/CD;
+- ambientes de staging e produção;
+- smoke tests automatizados.
+
+Ao iniciar a aplicação com um banco vazio, cinco iniciativas de exemplo são cadastradas automaticamente para preencher o dashboard.
+
+---
 
 ## Funcionalidades
 
-- Dashboard com total geral, total por categoria ESG e total de concluídas;
-- listagem responsiva de iniciativas;
-- cadastro, consulta detalhada, edição e exclusão;
-- validação de campos e pontuação de impacto entre 1 e 10;
-- badges de categoria e status;
-- mensagens de sucesso e erros de formulário;
-- endpoint de saúde em `/actuator/health`;
-- carga automática de dados iniciais quando o banco está vazio.
+- Dashboard com indicadores gerais;
+- total de iniciativas cadastradas;
+- total por categoria ESG;
+- total de iniciativas concluídas;
+- listagem de iniciativas;
+- cadastro de novas iniciativas;
+- visualização detalhada;
+- edição;
+- exclusão;
+- validação dos campos do formulário;
+- pontuação de impacto entre 1 e 10;
+- categorias Ambiental, Social e Governança;
+- controle de status;
+- endpoint de saúde em `/actuator/health`.
+
+---
 
 ## Arquitetura
 
-A aplicação segue uma separação simples entre Controller, Service, Repository e Entity.
+A aplicação utiliza uma arquitetura em camadas.
 
 ```mermaid
 flowchart TD
-    U[Usuário] --> W[Spring MVC + Thymeleaf]
-    W --> C[Controller]
+    U[Usuário] --> V[Spring MVC + Thymeleaf]
+    V --> C[Controller]
     C --> S[Service]
     S --> R[Repository / Spring Data JPA]
-    R --> P[(PostgreSQL)]
+    R --> DB[(PostgreSQL)]
 ```
 
-O Controller recebe as requisições e prepara as páginas; o Service concentra as regras; o Repository acessa o banco; o Thymeleaf gera o HTML e o Tailwind CSS via CDN cuida do visual.
+Responsabilidades principais:
 
-## Como executar localmente
+- **Controller:** recebe as requisições HTTP e prepara as páginas;
+- **Service:** concentra as regras de negócio;
+- **Repository:** realiza o acesso ao banco com Spring Data JPA;
+- **Entity:** representa os dados persistidos;
+- **Thymeleaf:** renderiza as páginas HTML;
+- **Tailwind CSS:** responsável pela estilização da interface.
 
-Pré-requisitos: Java 21 e PostgreSQL. Crie o banco e defina as variáveis de ambiente. No PowerShell:
+---
+
+# Como executar o projeto
+
+## Opção recomendada: Docker Compose
+
+Para executar todo o projeto localmente, é necessário apenas:
+
+- Docker Desktop;
+- Docker Compose.
+
+O PostgreSQL e a aplicação Spring Boot serão executados em containers.
+
+### 1. Criar o arquivo de ambiente
+
+No PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### 2. Construir e iniciar os containers
+
+```powershell
+docker compose up --build -d
+```
+
+### 3. Verificar os containers
+
+```powershell
+docker compose ps
+```
+
+Devem estar em execução os serviços:
+
+- `app`;
+- `postgres`.
+
+### 4. Acessar a aplicação
+
+Aplicação:
+
+```text
+http://localhost:8080
+```
+
+Health Check:
+
+```text
+http://localhost:8080/actuator/health
+```
+
+O endpoint de saúde deve retornar o status:
+
+```json
+{
+  "status": "UP"
+}
+```
+
+### Visualizar os logs
+
+```powershell
+docker compose logs -f app
+```
+
+### Encerrar os containers
+
+```powershell
+docker compose down
+```
+
+Para também excluir os dados persistidos do PostgreSQL:
+
+```powershell
+docker compose down -v
+```
+
+> O comando com `-v` remove o volume do banco e deve ser usado somente quando for necessário apagar os dados locais.
+
+---
+
+## Execução sem Docker
+
+Também é possível executar a aplicação diretamente com **Java 21** e um servidor **PostgreSQL** instalado localmente.
+
+No PowerShell:
 
 ```powershell
 $env:DB_HOST="localhost"
@@ -45,119 +156,280 @@ $env:DB_NAME="cidades_esg"
 $env:DB_USER="esg_user"
 $env:DB_PASSWORD="sua_senha"
 $env:SPRING_PROFILES_ACTIVE="staging"
+
 ./mvnw.cmd spring-boot:run
 ```
 
-Em Linux/macOS, use `export NOME=valor` e execute `./mvnw spring-boot:run`. Acesse [http://localhost:8080](http://localhost:8080).
+A aplicação estará disponível em:
 
-## Como executar localmente com Docker
-
-Pré-requisito: Docker Desktop com Docker Compose.
-
-```powershell
-Copy-Item .env.example .env
-docker compose up --build -d
-docker compose ps
+```text
+http://localhost:8080
 ```
 
-Edite a senha em `.env` antes de uso fora de uma demonstração local. A aplicação estará em [http://localhost:8080](http://localhost:8080) e a saúde em [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health).
+---
 
-Para acompanhar e encerrar:
+# Pipeline CI/CD
 
-```powershell
-docker compose logs -f app
-docker compose down
+O pipeline está configurado no arquivo:
+
+```text
+.github/workflows/ci-cd.yml
 ```
 
-Use `docker compose down -v` somente se também quiser apagar os dados persistidos no volume local.
+Ele é executado automaticamente em:
 
-## Pipeline CI/CD
+- `push` para a branch `main`;
+- `pull_request` destinado à branch `main`.
 
-O workflow `[.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml)` roda em `push` para `main` e em `pull_request` destinado a `main`. Os jobs usam `needs` para garantir esta sequência:
+A sequência utilizada é:
 
 ```mermaid
 flowchart LR
-    G[GitHub] --> A[GitHub Actions]
-    A --> B[Build]
+    GH[GitHub] --> GA[GitHub Actions]
+    GA --> B[Build]
     B --> T[Testes]
-    T --> D[Docker Build]
-    D --> S[Deploy Staging]
-    S --> ST[Smoke Test]
-    ST --> P[Deploy Produção]
-    P --> PT[Smoke Test]
+    T --> DB[Docker Build]
+    DB --> DS[Deploy Staging]
+    DS --> SS[Smoke Test Staging]
+    SS --> DP[Deploy Produção]
+    DP --> SP[Smoke Test Produção]
 ```
 
-1. **Build:** compila e empacota com Java 21 e Maven Wrapper;
-2. **Testes:** executa JUnit 5 usando H2 em memória;
-3. **Docker Build:** confirma que a imagem multi-stage é construída;
-4. **Deploy Staging:** sobe aplicação e PostgreSQL com Compose na porta 8081;
-5. **Smoke Test:** consulta `/actuator/health` até obter `UP` ou falhar;
-6. **Deploy Produção:** só inicia depois da aprovação de staging e usa a porta 8082;
-7. **Smoke Test:** repete a validação de saúde em produção.
+## Etapas do pipeline
 
-Os GitHub Environments `staging` e `production` são referenciados pelo workflow e podem ser criados em **Settings > Environments** para exibir o histórico ou adicionar aprovação manual. Nenhum secret é obrigatório para a demonstração básica.
+### 1. Build
 
-## Ambiente de Staging
+Compila e empacota a aplicação utilizando:
 
-O arquivo `docker-compose.staging.yml` cria rede, volume e banco próprios e ativa o profile `staging`. Para testar localmente:
+- Java 21;
+- Maven Wrapper.
+
+### 2. Testes automatizados
+
+Executa os testes com:
+
+- JUnit 5;
+- MockMvc;
+- H2 em memória.
+
+Os testes não dependem de um PostgreSQL externo.
+
+### 3. Docker Build
+
+Constrói a imagem definida no `Dockerfile` e valida se a aplicação pode ser corretamente containerizada.
+
+### 4. Deploy de Staging
+
+O GitHub Actions inicia um ambiente temporário utilizando:
+
+```text
+docker-compose.staging.yml
+```
+
+Nesse ambiente:
+
+- aplicação e PostgreSQL são executados em containers;
+- o profile Spring `staging` é utilizado;
+- a aplicação é exposta na porta `8081`.
+
+### 5. Smoke Test de Staging
+
+O pipeline consulta:
+
+```text
+/actuator/health
+```
+
+e somente continua quando a aplicação retorna:
+
+```text
+UP
+```
+
+### 6. Deploy de Produção
+
+Após o sucesso do ambiente de staging, é iniciado o ambiente de produção utilizando:
+
+```text
+docker-compose.prod.yml
+```
+
+Nesse ambiente:
+
+- aplicação e banco possuem recursos separados;
+- o profile `prod` é utilizado;
+- a aplicação é exposta na porta `8082`.
+
+### 7. Smoke Test de Produção
+
+O endpoint de saúde é consultado novamente para validar o ambiente de produção.
+
+---
+
+## Observação sobre os deploys
+
+Os ambientes de **staging** e **produção** utilizados neste projeto são criados temporariamente nos runners do GitHub Actions.
+
+Portanto, eles demonstram o processo de deploy automatizado e validação da aplicação, mas **não representam servidores públicos permanentes**.
+
+Os ambientes também podem ser visualizados no GitHub através de:
+
+```text
+Settings > Environments
+```
+
+utilizando os nomes:
+
+```text
+staging
+production
+```
+
+---
+
+# Ambiente de Staging
+
+Para executar o ambiente de staging localmente:
 
 ```powershell
 docker compose -f docker-compose.staging.yml up --build -d
+```
+
+Verificar a saúde:
+
+```powershell
 Invoke-RestMethod http://localhost:8081/actuator/health
+```
+
+Encerrar:
+
+```powershell
 docker compose -f docker-compose.staging.yml down
 ```
 
-No pipeline, esse ambiente existe temporariamente no runner do GitHub Actions. Ele demonstra um deploy automatizado containerizado; não representa um servidor ou URL pública.
+---
 
-## Ambiente de Produção
+# Ambiente de Produção
 
-O arquivo `docker-compose.prod.yml` utiliza recursos separados, profile `prod` e porta 8082:
+Para executar o ambiente de produção localmente:
 
 ```powershell
 docker compose -f docker-compose.prod.yml up --build -d
+```
+
+Verificar a saúde:
+
+```powershell
 Invoke-RestMethod http://localhost:8082/actuator/health
+```
+
+Encerrar:
+
+```powershell
 docker compose -f docker-compose.prod.yml down
 ```
 
-Assim como staging, produção é um ambiente containerizado temporário para fins acadêmicos, executado no runner do pipeline e sem URL pública.
+---
 
-## Containerização
+# Containerização
 
-O `Dockerfile` usa multi-stage build:
+O projeto utiliza um `Dockerfile` com **multi-stage build**.
 
-- `maven:3.9.12-eclipse-temurin-21-alpine` baixa dependências e gera o JAR;
-- `eclipse-temurin:21-jre-alpine` executa apenas o artefato final;
-- o processo roda com o usuário sem privilégios `spring`;
-- somente a porta 8080 é exposta;
-- o `HEALTHCHECK` consulta o Actuator;
-- `.dockerignore` reduz o contexto enviado ao Docker.
+### Etapa de build
 
-## Docker Compose
+Utiliza:
 
-O Compose principal orquestra `app` e `postgres`. Ele fornece:
+```text
+maven:3.9.12-eclipse-temurin-21-alpine
+```
 
-- volume nomeado `postgres-data` para persistência;
-- rede própria `esg-network`;
-- variáveis de ambiente com valores substituíveis por `.env`;
-- `depends_on` condicionado à saúde do PostgreSQL;
-- healthchecks do banco e da aplicação;
-- reinício automático no ambiente local.
+Essa etapa:
 
-As composições de staging e produção possuem nomes, redes, bancos e volumes separados, permitindo execução simultânea sem conflito.
+- baixa as dependências;
+- compila o projeto;
+- gera o arquivo JAR.
 
-## Testes automatizados
+### Etapa de execução
 
-Os testes não dependem de PostgreSQL externo. O profile `test` configura H2 em memória e inclui:
+Utiliza:
+
+```text
+eclipse-temurin:21-jre-alpine
+```
+
+Essa imagem contém apenas os recursos necessários para executar a aplicação.
+
+Também foram adotadas as seguintes práticas:
+
+- execução com usuário sem privilégios `spring`;
+- exposição apenas da porta `8080`;
+- `HEALTHCHECK` usando Spring Boot Actuator;
+- `.dockerignore` para reduzir o contexto enviado ao Docker.
+
+---
+
+# Docker Compose
+
+O arquivo principal:
+
+```text
+docker-compose.yml
+```
+
+orquestra dois serviços:
+
+```text
+app
+postgres
+```
+
+O ambiente possui:
+
+- PostgreSQL containerizado;
+- volume persistente;
+- rede Docker própria;
+- variáveis de ambiente;
+- healthcheck do PostgreSQL;
+- healthcheck da aplicação;
+- `depends_on` condicionado à saúde do banco;
+- reinício automático da aplicação no ambiente local.
+
+O banco utiliza o volume:
+
+```text
+postgres-data
+```
+
+e a rede:
+
+```text
+esg-network
+```
+
+Os ambientes de staging e produção possuem bancos, redes e volumes separados.
+
+---
+
+# Testes automatizados
+
+O profile de testes utiliza **H2 em memória**, evitando dependência de um banco PostgreSQL externo durante a execução dos testes.
+
+Os testes incluem:
 
 - carregamento do contexto Spring;
-- regra do Service que rejeita pontuação fora de 1 a 10;
-- integração do dashboard com MockMvc;
-- verificação do endpoint `/actuator/health`.
+- validação da regra de pontuação entre 1 e 10;
+- integração do dashboard utilizando MockMvc;
+- validação do endpoint `/actuator/health`.
 
-No PowerShell:
+Executar somente os testes:
 
 ```powershell
 ./mvnw.cmd test
+```
+
+Executar build completo:
+
+```powershell
 ./mvnw.cmd clean package
 ```
 
@@ -168,50 +440,85 @@ Em Linux/macOS:
 ./mvnw clean package
 ```
 
-## Variáveis de ambiente
+---
 
-| Variável                 | Exemplo             | Finalidade             |
-| ------------------------ | ------------------- | ---------------------- |
-| `DB_HOST`                | `postgres`          | Host do PostgreSQL     |
-| `DB_PORT`                | `5432`              | Porta do banco         |
-| `DB_NAME`                | `cidades_esg`       | Nome do banco          |
-| `DB_USER`                | `esg_user`          | Usuário do banco       |
-| `DB_PASSWORD`            | `troque_esta_senha` | Senha do banco         |
-| `SPRING_PROFILES_ACTIVE` | `staging`           | Profile Spring ativo   |
-| `SERVER_PORT`            | `8080`              | Porta interna opcional |
+# Variáveis de ambiente
 
-O arquivo `.env.example` é apenas um modelo. Copie-o para `.env`, que está ignorado pelo Git, e nunca versione senhas reais.
+| Variável                 | Exemplo             | Finalidade                 |
+| ------------------------ | ------------------- | -------------------------- |
+| `DB_HOST`                | `postgres`          | Host do PostgreSQL         |
+| `DB_PORT`                | `5432`              | Porta do PostgreSQL        |
+| `DB_NAME`                | `cidades_esg`       | Nome do banco              |
+| `DB_USER`                | `esg_user`          | Usuário do banco           |
+| `DB_PASSWORD`            | `troque_esta_senha` | Senha do banco             |
+| `SPRING_PROFILES_ACTIVE` | `staging`           | Profile Spring ativo       |
+| `SERVER_PORT`            | `8080`              | Porta interna da aplicação |
 
-## Tecnologias utilizadas
+O arquivo:
+
+```text
+.env.example
+```
+
+serve como modelo.
+
+O arquivo real:
+
+```text
+.env
+```
+
+está ignorado pelo Git e não deve ser versionado com credenciais reais.
+
+---
+
+# Tecnologias utilizadas
 
 - Java 21;
 - Spring Boot 3.5.16;
-- Spring MVC, Spring Data JPA e Bean Validation;
-- Thymeleaf e Tailwind CSS via CDN;
-- PostgreSQL 17 e H2 para testes;
-- Maven e Maven Wrapper;
-- JUnit 5 e MockMvc;
-- Docker, Docker Compose e GitHub Actions;
+- Spring MVC;
+- Spring Data JPA;
+- Bean Validation;
+- Thymeleaf;
+- Tailwind CSS;
+- PostgreSQL 17;
+- H2;
+- Maven;
+- Maven Wrapper;
+- JUnit 5;
+- MockMvc;
+- Docker;
+- Docker Compose;
+- GitHub Actions;
 - Spring Boot Actuator.
 
-## Estrutura do projeto
+---
+
+# Estrutura do projeto
 
 ```text
 atividade-devops/
-├── .github/workflows/ci-cd.yml
-├── .mvn/wrapper/maven-wrapper.properties
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+├── .mvn/
+│   └── wrapper/
+│       └── maven-wrapper.properties
 ├── docs/
-│   ├── evidencias/README.md
+│   ├── evidencias/
+│   │   └── README.md
 │   ├── documentacao-tecnica.md
 │   └── roteiro-apresentacao.md
 ├── src/
-│   ├── main/java/br/edu/cidadesesg/
-│   │   ├── config/
-│   │   ├── controller/
-│   │   ├── model/
-│   │   ├── repository/
-│   │   └── service/
-│   ├── main/resources/templates/
+│   ├── main/
+│   │   ├── java/br/edu/cidadesesg/
+│   │   │   ├── config/
+│   │   │   ├── controller/
+│   │   │   ├── model/
+│   │   │   ├── repository/
+│   │   │   └── service/
+│   │   └── resources/
+│   │       └── templates/
 │   └── test/
 ├── Dockerfile
 ├── docker-compose.yml
@@ -222,41 +529,97 @@ atividade-devops/
 └── pom.xml
 ```
 
-## Comandos úteis
+---
+
+# Evidências
+
+As evidências reais da execução local, dos containers e do pipeline CI/CD estão armazenadas na pasta:
+
+```text
+docs/evidencias/
+```
+
+As capturas demonstram:
+
+- aplicação em funcionamento;
+- dashboard;
+- listagem de iniciativas;
+- containers da aplicação e PostgreSQL;
+- build automatizado;
+- testes automatizados;
+- Docker Build;
+- deploy de staging;
+- smoke test;
+- deploy de produção.
+
+Nenhuma evidência simulada foi utilizada.
+
+---
+
+# Comandos úteis
 
 ```powershell
-# Testes e build
+# Testes
 ./mvnw.cmd test
+
+# Build
 ./mvnw.cmd clean package
 
-# Ambiente local
+# Iniciar ambiente local
 docker compose up --build -d
+
+# Ver containers
 docker compose ps
+
+# Ver logs da aplicação
 docker compose logs -f app
+
+# Health Check
 Invoke-RestMethod http://localhost:8080/actuator/health
+
+# Encerrar ambiente local
 docker compose down
 
-# Validar os três arquivos Compose sem subir containers
+# Validar os arquivos Docker Compose
 docker compose config
 docker compose -f docker-compose.staging.yml config
 docker compose -f docker-compose.prod.yml config
 ```
 
-## Checklist da atividade
+---
 
-- [x] Projeto com estrutura organizada
-- [x] Dockerfile funcional
-- [x] docker-compose.yml
-- [x] Banco PostgreSQL containerizado
+# Checklist da atividade
+
+- [x] Aplicação Spring Boot funcional
+- [x] Estrutura em camadas
+- [x] CRUD de iniciativas
+- [x] PostgreSQL
+- [x] Dockerfile
+- [x] Multi-stage build
+- [x] Docker Compose
+- [x] PostgreSQL containerizado
 - [x] Volume persistente
 - [x] Rede Docker
 - [x] Variáveis de ambiente
-- [x] .env.example
-- [x] Pipeline CI/CD
-- [x] Build automatizado
+- [x] `.env.example`
+- [x] Healthcheck da aplicação
+- [x] Healthcheck do PostgreSQL
 - [x] Testes automatizados
-- [x] Deploy staging
-- [x] Deploy produção
-- [x] README técnico
-- [x] Prints
+- [x] Build automatizado
+- [x] Docker Build automatizado
+- [x] Pipeline CI/CD
+- [x] Deploy de staging
+- [x] Smoke test de staging
+- [x] Deploy de produção
+- [x] Smoke test de produção
+- [x] GitHub Actions
+- [x] Evidências reais da execução
 - [x] Documentação técnica
+
+---
+
+## Conclusão
+
+O projeto demonstra um fluxo completo de desenvolvimento e entrega de uma aplicação web, integrando desenvolvimento Java, banco de dados, testes automatizados, containerização e CI/CD.
+
+A aplicação pode ser executada integralmente com Docker Compose, enquanto o GitHub Actions automatiza as etapas de build, testes, construção da imagem Docker, deploy de staging, validação de saúde e deploy de produção.
