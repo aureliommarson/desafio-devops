@@ -419,12 +419,50 @@ Os testes incluem:
 - carregamento do contexto Spring;
 - validação da regra de pontuação entre 1 e 10;
 - integração do dashboard utilizando MockMvc;
-- validação do endpoint `/actuator/health`.
+- validação dos endpoints REST de iniciativas e `/actuator/health`;
+- cenários BDD executados com Cucumber e Gherkin em português;
+- validação de contratos de resposta com JSON Schema.
+
+## BDD, Gherkin e contratos JSON
+
+Os cenários executáveis estão em `src/test/resources/features/iniciativas.feature`. A suíte Cucumber usa
+Spring Boot Test, MockMvc e o profile `test`, que aponta para H2 em memória. Cada cenário limpa o repositório
+antes da execução. Os passos chamam a API MVC real; não usam respostas simuladas.
+
+Os schemas em `src/test/resources/schemas/` descrevem iniciativas, listagens, erros JSON e o health check.
+`IniciativaApiContractTest` aplica esses schemas às respostas reais de todos os métodos e status relevantes,
+incluindo a resposta sem corpo do HTTP 204.
+
+Cobertura de contrato:
+
+| Endpoint | Respostas verificadas |
+| --- | --- |
+| `GET /api/iniciativas` | 200 + schema de lista |
+| `GET /api/iniciativas/{id}` | 200 + schema de iniciativa; 404 + schema de erro |
+| `POST /api/iniciativas` | 201 + schema de iniciativa; 400 + schema de erro |
+| `PUT /api/iniciativas/{id}` | 200 + schema de iniciativa; 400/404 + schema de erro |
+| `DELETE /api/iniciativas/{id}` | 204 sem corpo; 404 + schema de erro |
+| `GET /actuator/health` | 200 + schema de health |
+
+Pré-requisitos para testes locais: Java 21. Não é necessário iniciar PostgreSQL ou Docker; o profile H2 é
+ativado automaticamente pelos testes e não altera o banco de desenvolvimento/produção.
+
+No Windows CMD, execute:
+
+```cmd
+mvnw.cmd clean test
+```
+
+Os relatórios Surefire ficam em `target/surefire-reports/`. Os relatórios Cucumber ficam em
+`target/cucumber-reports/cucumber.html` e `target/cucumber-reports/cucumber.json`.
+
+O GitHub Actions configura Temurin Java 21 e executa `./mvnw -B clean test` no job de testes. Uma falha
+de JUnit, Cucumber ou contrato encerra o job e impede as etapas subsequentes de Docker e deploy.
 
 Executar somente os testes:
 
 ```powershell
-./mvnw.cmd test
+mvnw.cmd clean test
 ```
 
 Executar build completo:
@@ -504,7 +542,7 @@ atividade-devops/
 ├── .mvn/
 │   └── wrapper/
 │       └── maven-wrapper.properties
-│ 
+│
 ├── src/
 │   ├── main/
 │   │   ├── java/br/edu/cidadesesg/
@@ -526,7 +564,6 @@ atividade-devops/
 ```
 
 ---
-
 
 ---
 

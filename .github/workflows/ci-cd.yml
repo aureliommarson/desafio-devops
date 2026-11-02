@@ -25,7 +25,7 @@ jobs:
       - name: Compilar e empacotar
         run: |
           chmod +x mvnw
-          ./mvnw -B clean package -DskipTests
+          ./mvnw -B clean compile
 
   tests:
     name: 2 - Testes automatizados
@@ -41,7 +41,7 @@ jobs:
       - name: Executar testes com H2
         run: |
           chmod +x mvnw
-          ./mvnw -B test
+          ./mvnw -B clean test
 
   docker-build:
     name: 3 - Docker Build
